@@ -7,7 +7,7 @@ export default function RouteWrapper() {
     return (
         <Switch>
             <Route path='/' component={Home} exact/>
-            <Route path='/settings' component={Settings} />
+            <Route path='/play' component={Settings} />
         </Switch>
 
     )

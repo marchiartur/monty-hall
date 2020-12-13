@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import './settings.css';
 import Layout from '../../components/layout/layout';
-import { Typography, Row, Col, Button, Input, notification, Modal } from 'antd';
-import Paragraph from 'antd/lib/skeleton/Paragraph';
+import { Typography, Row, Col, Button, Input, notification } from 'antd';
+import gifCurtain from '../../images/curtain.gif';
+import frameCurtain from '../../images/frame_curtain.jpg';
 
 export default function Settings() {
 
@@ -11,6 +12,8 @@ export default function Settings() {
     });
 
     const [titles, setTitles] = useState(['Selecione um mico.', 'Selecione outro mico.', 'Selecione o prêmio.']);
+    const [gameMessages, setGameMessages] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
+    const [gameStage, setGameStage] = useState(0);
     const [imageOne, setImageOne] = useState('');
     const [imageTwo, setImageTwo] = useState('');
     const [imageThree, setImageThree] = useState('');
@@ -31,9 +34,10 @@ export default function Settings() {
     function sortImages() {
         setImagesSources([imageOne, imageTwo, imageThree]);
         hideImagesTitleAndInput();
-        let curtains = [1, 2, 3]; // mico, mico, premio
+        let curtains = [1, 2, 3];
         curtains = shuffle(curtains);
         setSortedCurtains(curtains);
+        setGameStage(1);
     };
 
     function shuffle(array) {
@@ -45,11 +49,10 @@ export default function Settings() {
     }
 
     function hideImagesTitleAndInput() {
-        let curtain = 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fak5.picdn.net%2Fshutterstock%2Fvideos%2F1009729775%2Fthumb%2F1.jpg&f=1&nofb=1';
         setBeforeSort(false);
-        setImageOne(curtain);
-        setImageTwo(curtain);
-        setImageThree(curtain);
+        setImageOne(frameCurtain);
+        setImageTwo(frameCurtain);
+        setImageThree(frameCurtain);
         setTitles(['Cortina 1', 'Cortina 2', 'Cortina 3']);
     };
 
@@ -58,13 +61,26 @@ export default function Settings() {
     }
 
     function openCurtain(curtain, positionImageToOpen) {
+        if (curtain == 1) {
+            setImageOne(gifCurtain);
+            setTimeout(function () {
+                setImageOne(imagesSources[positionImageToOpen]);
+            }, 2500);
+        }
+        if (curtain == 2) {
+            setImageTwo(gifCurtain);
+            setTimeout(function () {
+                setImageTwo(imagesSources[positionImageToOpen]);
+            }, 2500);
+        }
+        if (curtain == 3) {
+            setImageThree(gifCurtain);
+            setTimeout(function () {
+                setImageThree(imagesSources[positionImageToOpen]);
+            }, 2500);
+        }
 
-        if (curtain == 1)
-            setImageOne(imagesSources[positionImageToOpen]);
-        if (curtain == 2)
-            setImageTwo(imagesSources[positionImageToOpen]);
-        if (curtain == 3)
-            setImageThree(imagesSources[positionImageToOpen]);
+        return curtain;
     }
 
     function getMico(curtain) {
@@ -73,9 +89,10 @@ export default function Settings() {
 
         temporaryArray.splice(curtain, 1);
 
-        if (temporaryArray[0] === sortedCurtains[2])
+
+        if (temporaryArray[0] === 3)
             return temporaryArray[1];
-        else if (temporaryArray[1] === sortedCurtains[2])
+        else if (temporaryArray[1] === 3)
             return temporaryArray[0];
 
         return temporaryArray[Math.floor(Math.random() * temporaryArray.length)];
@@ -87,52 +104,70 @@ export default function Settings() {
     }
 
     function handleButtonClick(buttonId) {
-        const nextState = buttonsCurtains.map(button => {
-            return { ...button, disabled: true };
-        });
+        if (gameStage === 2) {
+            changeChooseCurtain(buttonId);
+            return;
+        } else if (gameStage === 3) {
+            setGameStage(0);
+            setBeforeSort(true);
+            setImageOne(imagesSources[0]);
+            setImageTwo(imagesSources[1]);
+            setImageThree(imagesSources[2]);
+            setTitles(['Cortina 1', 'Cortina 2', 'Cortina 3']);
+            sortImages();
+            setButtonsCurtains(initialStateButtonsCurtains);
+            return;
+        }
 
-        setButtonsCurtains(nextState);
         chooseCurtain(buttonId - 1);
 
         let micoImagePosition = getMico(buttonId - 1);
         let micoCurtainNumber = findCurtainByImagePosition(micoImagePosition);
 
-        openCurtain(micoCurtainNumber, micoImagePosition - 1);
+        let openedCurtain = openCurtain(micoCurtainNumber, micoImagePosition - 1);
 
-        setOpenedCurtain(micoCurtainNumber);
+        setOpenedCurtain(micoImagePosition);
+
+        const nextState = buttonsCurtains.map(button => {
+            if (openedCurtain != button.id) return button;
+            return { ...button, disabled: true };
+        });
+        setButtonsCurtains(nextState);
 
         notification.warn({ description: `O prêmio não está na cortina ${micoCurtainNumber}` });
-        setTimeout(function () { setShowChangeModal(true) }, 2000);
+        setGameStage(2);
     };
 
-    function changeChooseCurtain(changed) {
+    function changeChooseCurtain(buttonId) {
+        console.log(sortedCurtains, choosedCurtain);
         setShowChangeModal(false);
 
         let curtainPrize = choosedCurtain, curtainLost;
 
         for (let i = 0; i < 3; i++)
-            if (choosedCurtain != sortedCurtains[i] && openedCurtain != sortedCurtains[i])
+            if (choosedCurtain != i && openedCurtain != sortedCurtains[i]) {
                 curtainLost = i;
+                break;
+            }
 
-        if (changed) {
+        if (buttonId - 1 != choosedCurtain) {
             curtainPrize = curtainLost;
             curtainLost = choosedCurtain;
         };
-
-        console.log('imagens', sortedCurtains, 'ganhou', curtainPrize, 'perdeu', curtainLost);
 
         openCurtain(curtainLost + 1, sortedCurtains[curtainLost] - 1);
         notification.error({ description: `Você perdeu a cortina ${curtainLost + 1}` });
 
         openCurtain(curtainPrize + 1, sortedCurtains[curtainPrize] - 1);
-        notification.success({ description: `Você ganhou a cortina ${curtainPrize + 1}` })
+        notification.success({ description: `Você ganhou a cortina ${curtainPrize + 1}` });
 
-    }
+        setGameStage(3);
+    };
 
     return (
         <Layout>
             <>
-                <Title style={{ textAlign: 'center' }}>Vamos Jogar!</Title>
+                {gameStage=== 0 ?<Title style={{ textAlign: 'center' }}>Vamos Jogar!</Title> : '' }
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                     <Col id='column1' style={center}>
                         <h2>{titles[0]}</h2>
@@ -154,13 +189,15 @@ export default function Settings() {
                         <h2>{titles[2]}</h2>
                         <Input id='inputImagem3' style={{ display: beforeSort ? 'visible' : 'none' }} placeholder='Cole o link de uma imagem.' onChange={(event) => setImageThree(event.target.value)} />
                         {imageThree ?
-                            <img src={imageThree} alt='Imagem 3' style={{ width: '400px' }} /> : <div />
+                            <img src={imageThree} alt='Imagem 3' style={{ width: '400px' }} loading='lazy' /> : <div />
                         }
                     </Col>
                 </Row>
 
                 <Row style={{ marginTop: '20px' }} gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Button style={center} onClick={() => sortImages()} style={{ display: beforeSort ? 'visible' : 'none' }} >Embaralhar</Button>
+                    <Col style={center} style={{ display: beforeSort ? 'visible' : 'none' }}>
+                        <Button onClick={() => sortImages()} >Jogar</Button>
+                    </Col>
 
                     {beforeSort ? ' ' : buttonsCurtains.map(button => (
                         <Col key={button.id} style={center}>
@@ -174,21 +211,11 @@ export default function Settings() {
                         </Col>))}
                 </Row>
 
-                <Modal
-                    title="Você deseja mudar de cortina?"
-                    centered
-                    footer={null}
-                    closable={false}
-                    visible={showChangeModal}
-                >
-                    <Row>
-                        A sua cortina é a Cortina {choosedCurtain + 1}. Deseja mudar para a cortina?
-                    </Row>
-                    <Row style={{ marginTop: '20px' }}>
-                        <Button style={center} onClick={() => changeChooseCurtain(true)}>Sim</Button>
-                        <Button style={center} onClick={() => changeChooseCurtain(false)}>Não</Button>
-                    </Row>
-                </Modal>
+                <Row>
+                    <h1 style={center}>
+                        {gameStage === 1 ? gameMessages[0] : gameStage === 2 ? gameMessages[1] : gameStage === 3 ? gameMessages[2] : 'Insira a URL das imagens dos micos e do prêmio.'}
+                    </h1>
+                </Row>
             </>
         </Layout>
     );

@@ -8,7 +8,7 @@ export default function Home() {
     return (
         <Layout>
             <h1>Página Inicial</h1>
-            <NavLink to='/settings'>
+            <NavLink to='/play'>
                 <Button>
                 Iniciar o jogo
                 </Button>
