@@ -12,7 +12,7 @@ export default function Settings() {
     });
 
     const [titles, setTitles] = useState(['Selecione um mico.', 'Selecione outro mico.', 'Selecione o prêmio.']);
-    const [gameMessages, setGameMessages] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
+    const [gameMessages,] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
     const [gameStage, setGameStage] = useState(0);
     const [imageOne, setImageOne] = useState('');
     const [imageTwo, setImageTwo] = useState('');
@@ -25,11 +25,7 @@ export default function Settings() {
     const [sortedCurtains, setSortedCurtains] = useState([]);
     const [choosedCurtain, setChoosedCurtain] = useState();
 
-    const [showChangeModal, setShowChangeModal] = useState(false);
-
     const [openedCurtain, setOpenedCurtain] = useState();
-
-    const { Title } = Typography;
 
     function sortImages() {
         setImagesSources([imageOne, imageTwo, imageThree]);
@@ -139,9 +135,6 @@ export default function Settings() {
     };
 
     function changeChooseCurtain(buttonId) {
-        console.log(sortedCurtains, choosedCurtain);
-        setShowChangeModal(false);
-
         let curtainPrize = choosedCurtain, curtainLost;
 
         for (let i = 0; i < 3; i++)
@@ -167,7 +160,12 @@ export default function Settings() {
     return (
         <Layout>
             <>
-                {gameStage=== 0 ?<Title style={{ textAlign: 'center' }}>Vamos Jogar!</Title> : '' }
+                <Row style={{marginBottom: '50px'}}>
+                    <h1 style={center}>
+                        {gameStage === 1 ? gameMessages[0] : gameStage === 2 ? gameMessages[1] : gameStage === 3 ? gameMessages[2] : 'Insira a URL das imagens dos micos e do prêmio.'}
+                    </h1>
+                </Row>
+
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                     <Col id='column1' style={center}>
                         <h2>{titles[0]}</h2>
@@ -195,8 +193,8 @@ export default function Settings() {
                 </Row>
 
                 <Row style={{ marginTop: '20px' }} gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col style={center} style={{ display: beforeSort ? 'visible' : 'none' }}>
-                        <Button onClick={() => sortImages()} >Jogar</Button>
+                    <Col style={{ display: beforeSort ? 'visible' : 'none' }, center}>
+                        <Button type='primary' size='large' style={center} onClick={() => sortImages()} >Jogar</Button>
                     </Col>
 
                     {beforeSort ? ' ' : buttonsCurtains.map(button => (
@@ -210,16 +208,9 @@ export default function Settings() {
                             </Button>
                         </Col>))}
                 </Row>
-
-                <Row>
-                    <h1 style={center}>
-                        {gameStage === 1 ? gameMessages[0] : gameStage === 2 ? gameMessages[1] : gameStage === 3 ? gameMessages[2] : 'Insira a URL das imagens dos micos e do prêmio.'}
-                    </h1>
-                </Row>
             </>
         </Layout>
     );
 };
 
-const center = { margin: "0 auto", textAlign: 'center' }
-
+const center = { margin: "0 auto", textAlign: 'center' };

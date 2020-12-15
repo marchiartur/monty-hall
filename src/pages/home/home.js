@@ -7,10 +7,10 @@ import { NavLink } from 'react-router-dom';
 export default function Home() {
     return (
         <Layout>
-            <h1>Página Inicial</h1>
-            <NavLink to='/play'>
+            <h1>Paradoxo de Monty Hall</h1>
+            <NavLink to='/jogar'>
                 <Button>
-                Iniciar o jogo
+                    Iniciar o jogo
                 </Button>
             </NavLink>
         </Layout>
