@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './settings.css';
 import Layout from '../../components/layout/layout';
-import { Typography, Row, Col, Button, Input, notification } from 'antd';
+import { Row, Col, Button, Input, notification } from 'antd';
 import gifCurtain from '../../images/curtain.gif';
 import frameCurtain from '../../images/frame_curtain.jpg';
 
@@ -12,7 +12,9 @@ export default function Settings() {
     });
 
     const [titles, setTitles] = useState(['Selecione um mico.', 'Selecione outro mico.', 'Selecione o prêmio.']);
-    const [gameMessages,] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
+    const [choosedCurtain, setChoosedCurtain] = useState();
+    const [openedCurtain, setOpenedCurtain] = useState();
+    const [gameMessages, setGameMessages] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
     const [gameStage, setGameStage] = useState(0);
     const [imageOne, setImageOne] = useState('');
     const [imageTwo, setImageTwo] = useState('');
@@ -23,9 +25,7 @@ export default function Settings() {
     const [imagesSources, setImagesSources] = useState(['', '', '']);
 
     const [sortedCurtains, setSortedCurtains] = useState([]);
-    const [choosedCurtain, setChoosedCurtain] = useState();
 
-    const [openedCurtain, setOpenedCurtain] = useState();
 
     function sortImages() {
         setImagesSources([imageOne, imageTwo, imageThree]);
@@ -130,7 +130,11 @@ export default function Settings() {
         });
         setButtonsCurtains(nextState);
 
+        let arrayMessages = gameMessages;
+        arrayMessages[1] = `Você quer mudar sua escolha da cortina ${micoCurtainNumber}?`
+        setGameMessages(arrayMessages);
         notification.warn({ description: `O prêmio não está na cortina ${micoCurtainNumber}` });
+
         setGameStage(2);
     };
 
@@ -160,7 +164,7 @@ export default function Settings() {
     return (
         <Layout>
             <>
-                <Row style={{marginBottom: '50px'}}>
+                <Row style={{ marginBottom: '50px' }}>
                     <h1 style={center}>
                         {gameStage === 1 ? gameMessages[0] : gameStage === 2 ? gameMessages[1] : gameStage === 3 ? gameMessages[2] : 'Insira a URL das imagens dos micos e do prêmio.'}
                     </h1>
@@ -193,9 +197,12 @@ export default function Settings() {
                 </Row>
 
                 <Row style={{ marginTop: '20px' }} gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col style={{ display: beforeSort ? 'visible' : 'none' }, center}>
-                        <Button type='primary' size='large' style={center} onClick={() => sortImages()} >Jogar</Button>
-                    </Col>
+                    {
+                        beforeSort ? 
+                        <Col style={{ display: beforeSort === true ? 'visible' : 'none' }, center}>
+                            <Button type='primary' size='large' style={center} onClick={() => sortImages()} >Jogar</Button>
+                        </Col> : ''
+                    }
 
                     {beforeSort ? ' ' : buttonsCurtains.map(button => (
                         <Col key={button.id} style={center}>

@@ -3,27 +3,21 @@ import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
 export default function Header() {
+
     return (
         <>
             <HeaderDiv>
                 <HeaderNav>
-                    <Logo className='logo-container'>
-                        <NavLink to='/'>
-                            <a style={{ color: 'light blue' }}>
-                                Monty Hall Paradox
-                            </a>
-                        </NavLink>
-                    </Logo>
                     <NavLinkContainer className='navlinks-container'>
-                        <ul style={{ fontSize: '30px', fontWeight: 'lighter', margin: '0', marginLeft: '40px' }}>
+                        <ul style={{ fontSize: '29px', fontWeight: 'lighter', marginLeft: '6px', margin: '0' }}>
                             <ListItem>
-                                <NavLink to='/jogar'>
-                                    <ItemNavLink>Jogar</ItemNavLink>
+                                <NavLink to='/'>
+                                    <ItemNavLink>Página Inicial</ItemNavLink>
                                 </NavLink>
                             </ListItem>
                             <ListItem>
-                                <NavLink to='/creditos'>
-                                    <ItemNavLink>Créditos</ItemNavLink>
+                                <NavLink to='/jogar'>
+                                    <ItemNavLink>Jogar</ItemNavLink>
                                 </NavLink>
                             </ListItem>
                         </ul>
@@ -34,20 +28,16 @@ export default function Header() {
     )
 };
 
-const Logo = styled.div`
-float: left;
-margin-left: 2rem;
-font-family: Courier, monospace;
-font-size: 40px;
-font-weight: bold;
-`
-
 const HeaderDiv = styled.div`
 display: block;
+left: 0px;
+right: 0px;
+top: 0px;
+z-index: 9;
 `
-
 const HeaderNav = styled.nav`
-padding: 0px 1rem; 
+display: flex;
+padding: 10px 2rem; 
 height: auto;
 justify-content: center;
 border-bottom: 1rem solid black;
@@ -56,7 +46,8 @@ border-bottom: 1rem solid black;
 const NavLinkContainer = styled.div`
 display: flex;
 height: auto;
-padding: 8px;
+margin: auto;
+align-items: center;
 `
 
 const ListItem = styled.li`
@@ -65,10 +56,11 @@ display: inline;
 padding: 0px 15px;
 `
 
-const ItemNavLink = styled.a`
+const ItemNavLink = styled.div`
 position: relative;
 display: inline-block;
 color: black;
 &:hover {
     color: light blue;
 }`
+
