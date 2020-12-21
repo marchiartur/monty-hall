@@ -131,7 +131,7 @@ export default function Settings() {
         setButtonsCurtains(nextState);
 
         let arrayMessages = gameMessages;
-        arrayMessages[1] = `Você quer mudar sua escolha da cortina ${micoCurtainNumber}?`
+        arrayMessages[1] = `Você quer mudar sua escolha da cortina ${buttonId}?`
         setGameMessages(arrayMessages);
         notification.warn({ description: `O prêmio não está na cortina ${micoCurtainNumber}` });
 
