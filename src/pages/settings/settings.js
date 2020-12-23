@@ -11,27 +11,34 @@ export default function Settings() {
         return { id: id + 1, disabled: false }
     });
 
+    notification.config({
+        duration: 0
+    });
+
     const [titles, setTitles] = useState(['Selecione um mico.', 'Selecione outro mico.', 'Selecione o prêmio.']);
     const [choosedCurtain, setChoosedCurtain] = useState();
     const [openedCurtain, setOpenedCurtain] = useState();
-    const [gameMessages, setGameMessages] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', 'Clique em uma das cortinas para jogar novamente.']);
+    const [gameMessages, setGameMessages] = useState(['Escolha uma das três cortinas', 'Você quer mudar sua escolha?', ' Clique em uma das cortinas para jogar novamente.']);
     const [gameStage, setGameStage] = useState(0);
     const [imageOne, setImageOne] = useState('');
     const [imageTwo, setImageTwo] = useState('');
     const [imageThree, setImageThree] = useState('');
     const [buttonsCurtains, setButtonsCurtains] = useState(initialStateButtonsCurtains);
-
     const [beforeSort, setBeforeSort] = useState(true);
     const [imagesSources, setImagesSources] = useState(['', '', '']);
-
     const [sortedCurtains, setSortedCurtains] = useState([]);
 
+    let images = null;
 
     function sortImages() {
-        setImagesSources([imageOne, imageTwo, imageThree]);
+        if(images!=null)
+            setImagesSources([images[0], images[1], images[2]]);
+        else 
+            setImagesSources([imageOne, imageTwo, imageThree]);
+        
         hideImagesTitleAndInput();
-        let curtains = [1, 2, 3];
-        curtains = shuffle(curtains);
+        let curtains = [2, 1, 3];
+        //curtains = shuffle(curtains);
         setSortedCurtains(curtains);
         setGameStage(1);
     };
@@ -56,35 +63,32 @@ export default function Settings() {
         setChoosedCurtain(position);
     }
 
-    function openCurtain(curtain, positionImageToOpen) {
-        if (curtain == 1) {
+    function openCurtain(curtain, positionImageToOpen) {    // numero da cortina, posicao da imagem
+        console.log('abriu cortina', curtain, positionImageToOpen);
+        if (curtain === 1) {
             setImageOne(gifCurtain);
             setTimeout(function () {
                 setImageOne(imagesSources[positionImageToOpen]);
             }, 2500);
-        }
-        if (curtain == 2) {
+        } else if (curtain === 2) {
             setImageTwo(gifCurtain);
             setTimeout(function () {
                 setImageTwo(imagesSources[positionImageToOpen]);
             }, 2500);
-        }
-        if (curtain == 3) {
+        } else if (curtain === 3) {
             setImageThree(gifCurtain);
             setTimeout(function () {
                 setImageThree(imagesSources[positionImageToOpen]);
             }, 2500);
-        }
-
-        return curtain;
-    }
+        };
+    };
 
     function getMico(curtain) {
 
         let temporaryArray = [...sortedCurtains];
 
         temporaryArray.splice(curtain, 1);
-
+        console.log(sortedCurtains);
 
         if (temporaryArray[0] === 3)
             return temporaryArray[1];
@@ -92,73 +96,94 @@ export default function Settings() {
             return temporaryArray[0];
 
         return temporaryArray[Math.floor(Math.random() * temporaryArray.length)];
-    }
+    };
 
     function findCurtainByImagePosition(imagePosition) {
         for (let i = 0; i < 3; i++)
-            if (imagePosition === sortedCurtains[i]) return i + 1;
+            if (imagePosition === sortedCurtains[i]) return i;
+    };
+
+    function openMicoCurtain(currentChoosedCurtain) {
+        let imagePositionMico = getMico(currentChoosedCurtain);           
+        let micoCurtainNumber = findCurtainByImagePosition(imagePositionMico);        
+        openCurtain(micoCurtainNumber + 1, imagePositionMico - 1);
+        setOpenedCurtain(micoCurtainNumber);
+        return micoCurtainNumber + 1;
+    };
+
+    function updateCurtainButtons(openedMicoCurtain) {
+        const nextState = buttonsCurtains.map(button => {
+            if (openedMicoCurtain != button.id) return button;
+            return { ...button, disabled: true };
+        });
+
+        setButtonsCurtains(nextState);
+    };
+
+    function sendMessagesAlerts(currentChoosedCurtain, openedMicoCurtain) {
+        let arrayMessages = gameMessages;
+        arrayMessages[1] = `Você quer mudar sua escolha da cortina ${currentChoosedCurtain}?`
+        setGameMessages(arrayMessages);
+        notification.warn({ description: `O prêmio não está na cortina ${openedMicoCurtain}` });
     }
 
     function handleButtonClick(buttonId) {
-        if (gameStage === 2) {
+        if (gameStage === 1) {
+            chooseCurtain(buttonId - 1);
+            let micoCurtainNumber = openMicoCurtain(buttonId - 1);
+            updateCurtainButtons(micoCurtainNumber);
+            sendMessagesAlerts(buttonId, micoCurtainNumber);
+            setGameStage(2);
+        } else if (gameStage === 2) {
             changeChooseCurtain(buttonId);
             return;
         } else if (gameStage === 3) {
-            setGameStage(0);
-            setBeforeSort(true);
-            setImageOne(imagesSources[0]);
-            setImageTwo(imagesSources[1]);
-            setImageThree(imagesSources[2]);
-            setTitles(['Cortina 1', 'Cortina 2', 'Cortina 3']);
+            restartGame();
             sortImages();
-            setButtonsCurtains(initialStateButtonsCurtains);
             return;
-        }
-
-        chooseCurtain(buttonId - 1);
-
-        let micoImagePosition = getMico(buttonId - 1);
-        let micoCurtainNumber = findCurtainByImagePosition(micoImagePosition);
-
-        let openedCurtain = openCurtain(micoCurtainNumber, micoImagePosition - 1);
-
-        setOpenedCurtain(micoImagePosition);
-
-        const nextState = buttonsCurtains.map(button => {
-            if (openedCurtain != button.id) return button;
-            return { ...button, disabled: true };
-        });
-        setButtonsCurtains(nextState);
-
-        let arrayMessages = gameMessages;
-        arrayMessages[1] = `Você quer mudar sua escolha da cortina ${buttonId}?`
-        setGameMessages(arrayMessages);
-        notification.warn({ description: `O prêmio não está na cortina ${micoCurtainNumber}` });
-
-        setGameStage(2);
+        };
     };
 
     function changeChooseCurtain(buttonId) {
         let curtainPrize = choosedCurtain, curtainLost;
 
-        for (let i = 0; i < 3; i++)
-            if (choosedCurtain != i && openedCurtain != sortedCurtains[i]) {
-                curtainLost = i;
-                break;
-            }
+        let temporaryArray = [...sortedCurtains];
+
+
+        console.log('aberta', openedCurtain, 'escolhida', choosedCurtain);
+
+        temporaryArray.splice(openedCurtain, 1);
+        let indexOfChoosedCurtain = temporaryArray.indexOf(sortedCurtains[choosedCurtain]);
+        temporaryArray.splice(indexOfChoosedCurtain, 1);
+
+        console.log('restante', temporaryArray);
+
+        curtainLost = findCurtainByImagePosition(temporaryArray[0]);
 
         if (buttonId - 1 != choosedCurtain) {
             curtainPrize = curtainLost;
             curtainLost = choosedCurtain;
         };
 
+        console.log('ganhou', curtainPrize, 'perdeu', curtainLost);
+
+        setChoosedCurtain(curtainPrize);
         openCurtain(curtainLost + 1, sortedCurtains[curtainLost] - 1);
         notification.error({ description: `Você perdeu a cortina ${curtainLost + 1}` });
-
         openCurtain(curtainPrize + 1, sortedCurtains[curtainPrize] - 1);
         notification.success({ description: `Você ganhou a cortina ${curtainPrize + 1}` });
 
         setGameStage(3);
+    };
+
+    function restartGame() {
+        setGameStage(0);
+        setChoosedCurtain(null);
+        setOpenedCurtain(null);
+        images = [...imagesSources];
+        setSortedCurtains([]);
+        setTitles(['Cortina 1', 'Cortina 2', 'Cortina 3']);
+        setButtonsCurtains(initialStateButtonsCurtains);
     };
 
     return (
@@ -166,7 +191,16 @@ export default function Settings() {
             <>
                 <Row style={{ marginBottom: '50px' }}>
                     <h1 style={center}>
-                        {gameStage === 1 ? gameMessages[0] : gameStage === 2 ? gameMessages[1] : gameStage === 3 ? gameMessages[2] : 'Insira a URL das imagens dos micos e do prêmio.'}
+                        {
+                            gameStage === 3 ?
+                                sortedCurtains[choosedCurtain] === 3 ? 'Você ganhou o prêmio!' : ':( Você não ganhou o prêmio.' : ''
+                        }
+                        {
+                            gameStage === 1 ? gameMessages[0] :
+                                gameStage === 2 ? gameMessages[1] :
+                                    gameStage === 3 ? gameMessages[2] :
+                                        'Insira a URL das imagens dos micos e do prêmio.'
+                        }
                     </h1>
                 </Row>
 
@@ -198,10 +232,10 @@ export default function Settings() {
 
                 <Row style={{ marginTop: '20px' }} gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                     {
-                        beforeSort ? 
-                        <Col style={{ display: beforeSort === true ? 'visible' : 'none' }, center}>
-                            <Button type='primary' size='large' style={center} onClick={() => sortImages()} >Jogar</Button>
-                        </Col> : ''
+                        beforeSort ?
+                            <Col style={{ display: beforeSort === true ? 'visible' : 'none' }, center}>
+                                <Button type='primary' size='large' style={center} onClick={() => sortImages()} >Jogar</Button>
+                            </Col> : ''
                     }
 
                     {beforeSort ? ' ' : buttonsCurtains.map(button => (
