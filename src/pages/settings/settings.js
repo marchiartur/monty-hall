@@ -31,14 +31,14 @@ export default function Settings() {
     let images = null;
 
     function sortImages() {
-        if(images!=null)
+        if (images != null)
             setImagesSources([images[0], images[1], images[2]]);
-        else 
+        else
             setImagesSources([imageOne, imageTwo, imageThree]);
-        
+
         hideImagesTitleAndInput();
-        let curtains = [2, 1, 3];
-        //curtains = shuffle(curtains);
+        let curtains = [1, 2, 3];
+        curtains = shuffle(curtains);
         setSortedCurtains(curtains);
         setGameStage(1);
     };
@@ -64,7 +64,6 @@ export default function Settings() {
     }
 
     function openCurtain(curtain, positionImageToOpen) {    // numero da cortina, posicao da imagem
-        console.log('abriu cortina', curtain, positionImageToOpen);
         if (curtain === 1) {
             setImageOne(gifCurtain);
             setTimeout(function () {
@@ -88,7 +87,6 @@ export default function Settings() {
         let temporaryArray = [...sortedCurtains];
 
         temporaryArray.splice(curtain, 1);
-        console.log(sortedCurtains);
 
         if (temporaryArray[0] === 3)
             return temporaryArray[1];
@@ -104,8 +102,8 @@ export default function Settings() {
     };
 
     function openMicoCurtain(currentChoosedCurtain) {
-        let imagePositionMico = getMico(currentChoosedCurtain);           
-        let micoCurtainNumber = findCurtainByImagePosition(imagePositionMico);        
+        let imagePositionMico = getMico(currentChoosedCurtain);
+        let micoCurtainNumber = findCurtainByImagePosition(imagePositionMico);
         openCurtain(micoCurtainNumber + 1, imagePositionMico - 1);
         setOpenedCurtain(micoCurtainNumber);
         return micoCurtainNumber + 1;
@@ -149,14 +147,9 @@ export default function Settings() {
 
         let temporaryArray = [...sortedCurtains];
 
-
-        console.log('aberta', openedCurtain, 'escolhida', choosedCurtain);
-
         temporaryArray.splice(openedCurtain, 1);
         let indexOfChoosedCurtain = temporaryArray.indexOf(sortedCurtains[choosedCurtain]);
         temporaryArray.splice(indexOfChoosedCurtain, 1);
-
-        console.log('restante', temporaryArray);
 
         curtainLost = findCurtainByImagePosition(temporaryArray[0]);
 
@@ -164,8 +157,6 @@ export default function Settings() {
             curtainPrize = curtainLost;
             curtainLost = choosedCurtain;
         };
-
-        console.log('ganhou', curtainPrize, 'perdeu', curtainLost);
 
         setChoosedCurtain(curtainPrize);
         openCurtain(curtainLost + 1, sortedCurtains[curtainLost] - 1);
